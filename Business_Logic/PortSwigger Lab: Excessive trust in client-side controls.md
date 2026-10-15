@@ -13,9 +13,9 @@ Status: Done
 
 ## Intro
 
-This new series is about Business Logic.
+This new series is about Business Logic, but what does it cover?
 
-Business logic vulnerabilities are flaws in the design and implementation of an application that let users do something the application was not supposed to allow. They are not technical bugs like injection — they come from flawed assumptions about how users will interact with the app. In this lab, the app assumes the client will never tamper with the price it sends.
+Business logic vulnerabilities are flaws in the design and implementation of an application that let users do something the application was not supposed to allow. They are not technical bugs like injection, they come from flawed assumptions about how users will interact with the app. In this lab, the app assumes the client will never change the price it sends.
 
 This write-up covers the reconnaissance, the exploitation steps, the root cause, the real-world impact, and how to prevent it.
 
