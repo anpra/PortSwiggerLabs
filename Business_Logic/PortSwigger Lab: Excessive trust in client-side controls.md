@@ -11,21 +11,13 @@ Status: Done
 
 ---
 
-# Lab Information:
-
-- **Vulnerability Location:** `POST /cart` — the `price` parameter.
-- **Difficulty:** Apprentice
-- **Objective:** Buy the "Lightweight l33t leather jacket" for an unintended price.
-- **Tools:** Burp Suite, Burp Repeater
-- **Provided Credentials:** `wiener:peter`
-
----
-
 ## Intro
 
 This new series is about Business Logic.
 
 Business logic vulnerabilities are flaws in the design and implementation of an application that let users do something the application was not supposed to allow. They are not technical bugs like injection — they come from flawed assumptions about how users will interact with the app. In this lab, the app assumes the client will never tamper with the price it sends.
+
+This write-up covers the reconnaissance, the exploitation steps, the root cause, the real-world impact, and how to prevent it.
 
 ---
 
