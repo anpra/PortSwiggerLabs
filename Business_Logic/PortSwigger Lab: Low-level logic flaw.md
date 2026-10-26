@@ -95,6 +95,10 @@ csrf=<TOKEN>
 
 The response was the order confirmation ("Congratulations, you solved the lab!") and the lab was solved.
 
+#### Automating with a script
+
+Because the quantity is capped at 99, the overflow requires hundreds of `POST /cart` requests — painfully slow by hand (or with Burp Community's rate-limited Intruder). So I automated the whole flow in `scripts/low_level_logic_overflow.py`: it adds a buffer of the cheap item, overflows the total with the jacket, fine-tunes the total into `[0, $100]`, and checks out.
+
 ---
 
 ## Root Cause
