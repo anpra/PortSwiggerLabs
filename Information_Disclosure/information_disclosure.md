@@ -8,6 +8,8 @@ Menção a base de dados ou nomes de colunas nas mensagens de erro.
 Exposição de informação sensível como detalhes de cartão de crédito.
 Chaves API, Endereços de IP, credenciais de Banco de dados e outros no código fonte.
 
+![Exposição acidental de informações](<Images/Exposição acidental de informações.png>)
+
 ---
 
 Metodologia:
