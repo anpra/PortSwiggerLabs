@@ -10,17 +10,13 @@ Each write-up follows the same structure: reconnaissance, exploitation, root cau
 
 ## Labs covered
 
-| Section | Labs | Folder |
-|---|---|---|
-| File Upload Vulnerabilities | 7 | [File Upload Vulnerability](File%20Upload%20Vulnerability) |
-| XML External Entity (XXE) | 6 | [XXE](XXE) |
-| NoSQL Injection | 4 | [NOSQL](NOSQL) |
-| Business Logic | 11 | [Business_Logic](Business_Logic) |
-| Information Disclosure | 5 | [Information_Disclosure](Information_Disclosure) |
-
-## Methodology
-
-- [Information Disclosure — testing methodology](Information_Disclosure/information_disclosure.md)
+| Done | Section | Labs | Folder |
+|---|---|---|---|
+| [x] | File Upload Vulnerabilities | 7 | [File Upload Vulnerability](File%20Upload%20Vulnerability) |
+| [x] | XML External Entity (XXE) | 6 | [XXE](XXE) |
+| [x] | NoSQL Injection | 4 | [NOSQL](NOSQL) |
+| [x] | Business Logic | 11 | [Business_Logic](Business_Logic) |
+| [x] | Information Disclosure | 5 | [Information_Disclosure](Information_Disclosure) |
 
 ## Scripts
 
