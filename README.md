@@ -18,7 +18,7 @@ Each write-up follows the same structure: reconnaissance, exploitation, root cau
 | [x] | Business Logic | 11 | [Business_Logic](Business_Logic) |
 | [x] | Information Disclosure | 5 | [Information_Disclosure](Information_Disclosure) |
 | [ ] | Server-Side Request Forgery (SSRF) | 5 | [SSRF](SSRF) |
-| [ ] | API Testing | 1 | [API_Testing](API_Testing) |
+| [x] | API Testing | 2 | [API_Testing](API_Testing) |
 
 ## Scripts
 
